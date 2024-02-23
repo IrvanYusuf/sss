@@ -8,6 +8,7 @@ const connection = new Sequelize(
     host: process.env.MYSQL_ADDON_HOST,
     dialect: "mysql",
     port: process.env.MYSQL_ADDON_PORT,
+    password: process.env.MYSQL_ADDON_PASSWORD,
     dialectOptions: {
       useUTC: false,
       dateStrings: true,
