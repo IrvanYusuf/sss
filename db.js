@@ -1,12 +1,13 @@
 const { Sequelize } = require("sequelize");
 
 const connection = new Sequelize(
-  "bozrfw2miwisr2bnizcq",
-  "upqvw0evryi1zmhl",
-  "vtPYNyLJ2TXjXmVTjUJr",
+  process.env.MYSQL_ADDON_DB,
+  process.env.MYSQL_ADDON_USER,
+  process.env.MYSQL_ADDON_PASSWORD,
   {
-    host: "bozrfw2miwisr2bnizcq-mysql.services.clever-cloud.com",
+    host: process.env.MYSQL_ADDON_HOST,
     dialect: "mysql",
+    port: process.env.MYSQL_ADDON_PORT,
     dialectOptions: {
       useUTC: false,
       dateStrings: true,
