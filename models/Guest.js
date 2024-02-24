@@ -28,6 +28,7 @@ const getAllGuests = async (status = undefined, limit, offset) => {
       queryParams = [status, limit, offset];
     } else {
       query = `SELECT * FROM tbl_guests LIMIT ? OFFSET ?`;
+      queryParams = [limit, offset];
     }
     const [result] = await connection.query(query, queryParams);
     return result;
