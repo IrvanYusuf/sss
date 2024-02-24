@@ -1,19 +1,16 @@
-const { Op, where } = require("sequelize");
+// const { Op, where } = require("sequelize");
 const GuestModel = require("../models/Guest.js");
+const { v4: uuidv4 } = require("uuid");
+const moment = require("moment");
 
 const createGuest = async (req, res) => {
   try {
     const body = req.body;
+    const createdAt = moment().format("YYYY-MM-DD HH:mm:ss");
 
-    const create = await GuestModel.create({
-      name: body.name,
-      address: body.address,
-      amount: body.amount,
-      status: body.status,
-    });
+    const result = await GuestModel.createGuest(uuidv4(), body, createdAt);
 
-    res.status(201).json({ status: "success", data: create });
-    console.log(body);
+    res.status(201).json({ status: "success", data: result });
   } catch (error) {
     console.log(error);
     res.status(500).json({ status: "failed", message: error.message });
@@ -22,47 +19,35 @@ const createGuest = async (req, res) => {
 
 const getAllGuests = async (req, res) => {
   try {
-    // const result = await GuestModel.findAll();
     const limit = parseInt(req.query.limit) || 10;
     const page = parseInt(req.query.page) || 0;
     const status = req.query.status;
     const offset = page * limit;
-    const result = await GuestModel.findAndCountAll({
-      limit: limit,
-      offset: offset,
-      where: status ? { status: status } : {},
-    });
+    const result = await GuestModel.getAllGuests(status, limit, offset);
     res.status(200).json({
-      status: "success",
-      total: result.rows.length,
+      message: "success",
+      total: result.length,
       limit: limit,
       page: page,
       data: result,
     });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ status: "failed", message: error.message });
   }
 };
 
-const getAllGuestsByStatus = async (req, res) => {
-  try {
-    const { status } = req.params;
-
-    const result = await GuestModel.findAll({ where: { status: status } });
-    res.status(200).json({ status: "success", data: result });
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ status: "failed", message: error.message });
-  }
-};
+// const getGuestById = async(req,res) => {
+//   try {
+//     const guestId = req.query.g
+//   } catch (error) {
+//     console.log(error);
+//   }
+// }
 
 const sumAmountByStatus = async (req, res) => {
   try {
     const { status } = req.params;
-    const result = await GuestModel.sum("amount", {
-      where: { status: status },
-    });
+    const result = await GuestModel.getAllSumAmountByStatus(status);
     res.status(200).json({ status: "success", data: result });
   } catch (error) {
     console.log(error);
@@ -78,22 +63,12 @@ const searchGuest = async (req, res) => {
     const offset = page * limit;
     console.log(search);
 
-    const result = await GuestModel.findAndCountAll({
-      where: {
-        [Op.or]: [
-          { name: { [Op.like]: `%${search}%` } },
-          { address: { [Op.like]: `%${search}%` } },
-        ],
-      },
-      offset: offset,
-      limit: limit,
-    });
-
-    const totalPages = Math.ceil(result.count / limit);
-
+    const result = await GuestModel.searchGuest(search, limit, offset);
+    console.log(result);
+    const totalPages = Math.ceil(result.length / limit);
     res
       .status(200)
-      .json({ status: "success", data: result.rows, totalPage: totalPages });
+      .json({ status: "success", totalPage: totalPages, data: result });
   } catch (error) {
     console.log(error);
     res.status(500).json({ status: "failed", message: error.message });
@@ -103,8 +78,9 @@ const searchGuest = async (req, res) => {
 const changeStatus = async (req, res) => {
   try {
     const { guestId } = req.params;
-    const guest = await GuestModel.findOne({ where: { guestId } });
-    let dataStatus = guest.dataValues.status;
+    // const guest = await GuestModel.findOne({ where: { guestId } });
+    const [guest] = await GuestModel.getGuestById(guestId);
+    let dataStatus = guest.status;
     let newStatus = "";
 
     if (dataStatus === "Selesai") {
@@ -112,15 +88,7 @@ const changeStatus = async (req, res) => {
     } else {
       newStatus = "Selesai";
     }
-
-    const result = await GuestModel.update(
-      { status: newStatus },
-      {
-        where: {
-          guestId: guestId,
-        },
-      }
-    );
+    const result = await GuestModel.changeStatus(newStatus, guestId);
 
     res.status(200).json({ status: "success", data: result });
   } catch (error) {
@@ -131,8 +99,8 @@ const changeStatus = async (req, res) => {
 
 const getLengthGuests = async (req, res) => {
   try {
-    const result = await GuestModel.findAndCountAll();
-    res.status(200).json({ status: "success", data: result.count });
+    const result = await GuestModel.getLengthGuests();
+    res.status(200).json({ status: "success", data: result });
   } catch (error) {
     console.log(error);
     res.status(500).json({ status: "failed", message: error.message });
@@ -142,11 +110,7 @@ const getLengthGuests = async (req, res) => {
 const getGuestById = async (req, res) => {
   try {
     const { guestId } = req.params;
-    const result = await GuestModel.findOne({
-      where: {
-        guestId: guestId,
-      },
-    });
+    const result = await GuestModel.getGuestById(guestId);
     res.status(200).json({ status: "success", data: result });
   } catch (error) {
     console.log(error);
@@ -159,16 +123,8 @@ const updateGuest = async (req, res) => {
     const { guestId } = req.params;
     const body = req.body;
     const convertAmount = parseInt(body.amount);
-    const result = GuestModel.update(
-      { name: body.name, address: body.address, amount: parseInt(body.amount) },
-      {
-        where: {
-          guestId: guestId,
-        },
-      }
-    );
+    const result = await GuestModel.updateGuests(body, convertAmount, guestId);
     res.status(200).json({ status: "success", data: result });
-    console.log({ body, convertAmount });
   } catch (error) {
     console.log(error);
     res.status(500).json({ status: "failed", message: error.message });
@@ -178,8 +134,8 @@ const updateGuest = async (req, res) => {
 const deletGuestById = async (req, res) => {
   try {
     const { guestId } = req.params;
-    const result = await GuestModel.destroy({ where: { guestId: guestId } });
-    await res.status(200).json({ status: "success", data: result });
+    const result = await GuestModel.deleteGuestById(guestId);
+    res.status(200).json({ status: "success", data: result });
   } catch (error) {
     console.log(error);
     res.status(500).json({ status: "failed", message: error.message });

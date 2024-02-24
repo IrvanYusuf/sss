@@ -1,10 +1,13 @@
 const UserModel = require("../models/User.js");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const { v4: uuidv4 } = require("uuid");
+const moment = require("moment");
 
 const register = async (req, res) => {
   try {
     const { username, password } = req.body;
+    const createdAt = moment().format("YYYY-MM-DD HH:mm:ss");
 
     if (!password)
       return res
@@ -13,10 +16,12 @@ const register = async (req, res) => {
 
     const salt = await bcrypt.genSalt();
     const hashPassword = await bcrypt.hash(password, salt);
-    const result = await UserModel.create({
-      username: username,
-      password: hashPassword,
-    });
+    const result = await UserModel.register(
+      uuidv4(),
+      username,
+      hashPassword,
+      createdAt
+    );
     res.status(201).json({ status: "success", data: result });
   } catch (error) {
     console.log(error);
@@ -41,9 +46,7 @@ const login = async (req, res) => {
         .json({ status: "failed", message: "password tidak boleh kosong" });
 
     // cek user di database
-    const isUserExist = await UserModel.findOne({
-      where: { username: username },
-    });
+    const [isUserExist] = await UserModel.login(username);
 
     if (!isUserExist) {
       return res.status(401).json({
@@ -53,10 +56,7 @@ const login = async (req, res) => {
     }
 
     // melakukan compare password
-    const checkPassword = await bcrypt.compare(
-      password,
-      isUserExist.dataValues.password
-    );
+    const checkPassword = await bcrypt.compare(password, isUserExist.password);
 
     if (!checkPassword)
       return res
@@ -66,14 +66,13 @@ const login = async (req, res) => {
     // membuat token
     const token = jwt.sign(
       {
-        id: isUserExist.dataValues.userId,
-        name: isUserExist.dataValues.username,
+        id: isUserExist.userId,
+        name: isUserExist.username,
       },
-      "secret",
+      process.env.JWT_SECRET,
       { expiresIn: "2 days" }
     );
 
-    console.log(isUserExist.dataValues);
     res.status(200).json({ status: "success", token: token });
   } catch (error) {
     console.log(error);
