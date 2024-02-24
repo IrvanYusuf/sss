@@ -21,9 +21,10 @@ const getAllGuests = async (req, res) => {
   try {
     const limit = parseInt(req.query.limit) || 10;
     const page = parseInt(req.query.page) || 0;
+    const search = req.query.search;
     const status = req.query.status;
     const offset = page * limit;
-    const result = await Guest.getAllGuests(status, limit, offset);
+    const result = await Guest.getAllGuests(status, limit, offset,search);
     const total = await Guest.getLengthGuests(status);
     res.status(200).json({
       message: "success",
@@ -36,14 +37,6 @@ const getAllGuests = async (req, res) => {
     console.log(error);
   }
 };
-
-// const getGuestById = async(req,res) => {
-//   try {
-//     const guestId = req.query.g
-//   } catch (error) {
-//     console.log(error);
-//   }
-// }
 
 const sumAmountByStatus = async (req, res) => {
   try {

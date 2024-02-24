@@ -19,13 +19,21 @@ const createGuest = async (guestId, body, createdAt) => {
   }
 };
 
-const getAllGuests = async (status = undefined, limit, offset) => {
+const getAllGuests = async (
+  status = undefined,
+  limit,
+  offset,
+  search = undefined
+) => {
   try {
     let query = "";
     let queryParams = [];
     if (status !== undefined) {
       query = `SELECT * FROM tbl_guests WHERE status = ? LIMIT ? OFFSET ?`;
       queryParams = [status, limit, offset];
+    } else if (search !== undefined) {
+      query = `SELECT * FROM tbl_guests WHERE name LIKE ? OR address LIKE ? LIMIT ? OFFSET ?`;
+      queryParams = [search, search, limit, offset];
     } else {
       query = `SELECT * FROM tbl_guests LIMIT ? OFFSET ?`;
       queryParams = [limit, offset];
@@ -34,7 +42,6 @@ const getAllGuests = async (status = undefined, limit, offset) => {
     return result;
   } catch (error) {
     console.log(error);
-    res.status(500).json({ status: "failed", message: error.message });
   }
 };
 
@@ -104,7 +111,7 @@ const getLengthGuests = async (status = undefined) => {
 
 const updateGuests = async (body, amount, guestId) => {
   try {
-    const query = `UPDATE tbl_guests SET name = ?,address = ?,amount = ? WHERE guestId = ?`;
+    const query = `UPDATE tbl_guests SET name = ?,address = ?, amount = ? WHERE guestId = ?`;
     const [result] = await connection.execute(query, [
       body.name,
       body.address,
