@@ -1,5 +1,5 @@
 // const { Op, where } = require("sequelize");
-const GuestModel = require("../models/Guest.js");
+const Guest = require("../models/Guest.js");
 const { v4: uuidv4 } = require("uuid");
 const moment = require("moment");
 
@@ -8,7 +8,7 @@ const createGuest = async (req, res) => {
     const body = req.body;
     const createdAt = moment().format("YYYY-MM-DD HH:mm:ss");
 
-    const result = await GuestModel.createGuest(uuidv4(), body, createdAt);
+    const result = await Guest.createGuest(uuidv4(), body, createdAt);
 
     res.status(201).json({ status: "success", data: result });
   } catch (error) {
@@ -23,7 +23,7 @@ const getAllGuests = async (req, res) => {
     const page = parseInt(req.query.page) || 0;
     const status = req.query.status;
     const offset = page * limit;
-    const result = await GuestModel.getAllGuests(status, limit, offset);
+    const result = await Guest.getAllGuests(status, limit, offset);
     res.status(200).json({
       message: "success",
       total: result.length,
@@ -47,7 +47,7 @@ const getAllGuests = async (req, res) => {
 const sumAmountByStatus = async (req, res) => {
   try {
     const { status } = req.params;
-    const result = await GuestModel.getAllSumAmountByStatus(status);
+    const result = await Guest.getAllSumAmountByStatus(status);
     res.status(200).json({ status: "success", data: result });
   } catch (error) {
     console.log(error);
@@ -63,7 +63,7 @@ const searchGuest = async (req, res) => {
     const offset = page * limit;
     console.log(search);
 
-    const result = await GuestModel.searchGuest(search, limit, offset);
+    const result = await Guest.searchGuest(search, limit, offset);
     console.log(result);
     const totalPages = Math.ceil(result.length / limit);
     res
@@ -78,8 +78,8 @@ const searchGuest = async (req, res) => {
 const changeStatus = async (req, res) => {
   try {
     const { guestId } = req.params;
-    // const guest = await GuestModel.findOne({ where: { guestId } });
-    const [guest] = await GuestModel.getGuestById(guestId);
+    // const guest = await Guest.findOne({ where: { guestId } });
+    const [guest] = await Guest.getGuestById(guestId);
     let dataStatus = guest.status;
     let newStatus = "";
 
@@ -88,7 +88,7 @@ const changeStatus = async (req, res) => {
     } else {
       newStatus = "Selesai";
     }
-    const result = await GuestModel.changeStatus(newStatus, guestId);
+    const result = await Guest.changeStatus(newStatus, guestId);
 
     res.status(200).json({ status: "success", data: result });
   } catch (error) {
@@ -99,7 +99,7 @@ const changeStatus = async (req, res) => {
 
 const getLengthGuests = async (req, res) => {
   try {
-    const result = await GuestModel.getLengthGuests();
+    const result = await Guest.getLengthGuests();
     res.status(200).json({ status: "success", data: result });
   } catch (error) {
     console.log(error);
@@ -110,7 +110,7 @@ const getLengthGuests = async (req, res) => {
 const getGuestById = async (req, res) => {
   try {
     const { guestId } = req.params;
-    const result = await GuestModel.getGuestById(guestId);
+    const result = await Guest.getGuestById(guestId);
     res.status(200).json({ status: "success", data: result });
   } catch (error) {
     console.log(error);
@@ -123,7 +123,7 @@ const updateGuest = async (req, res) => {
     const { guestId } = req.params;
     const body = req.body;
     const convertAmount = parseInt(body.amount);
-    const result = await GuestModel.updateGuests(body, convertAmount, guestId);
+    const result = await Guest.updateGuests(body, convertAmount, guestId);
     res.status(200).json({ status: "success", data: result });
   } catch (error) {
     console.log(error);
@@ -134,7 +134,7 @@ const updateGuest = async (req, res) => {
 const deletGuestById = async (req, res) => {
   try {
     const { guestId } = req.params;
-    const result = await GuestModel.deleteGuestById(guestId);
+    const result = await Guest.deleteGuestById(guestId);
     res.status(200).json({ status: "success", data: result });
   } catch (error) {
     console.log(error);

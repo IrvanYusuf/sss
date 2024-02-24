@@ -1,4 +1,4 @@
-const UserModel = require("../models/User.js");
+const User = require("../models/User.js");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { v4: uuidv4 } = require("uuid");
@@ -16,7 +16,7 @@ const register = async (req, res) => {
 
     const salt = await bcrypt.genSalt();
     const hashPassword = await bcrypt.hash(password, salt);
-    const result = await UserModel.register(
+    const result = await User.register(
       uuidv4(),
       username,
       hashPassword,
@@ -46,7 +46,7 @@ const login = async (req, res) => {
         .json({ status: "failed", message: "password tidak boleh kosong" });
 
     // cek user di database
-    const [isUserExist] = await UserModel.login(username);
+    const [isUserExist] = await User.login(username);
 
     if (!isUserExist) {
       return res.status(401).json({
