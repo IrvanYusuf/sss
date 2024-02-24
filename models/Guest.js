@@ -85,10 +85,17 @@ const changeStatus = async (status, guestId) => {
   }
 };
 
-const getLengthGuests = async () => {
+const getLengthGuests = async (status = undefined) => {
   try {
-    const query = `SELECT COUNT(guestId) AS jumlah FROM tbl_guests`;
-    const [result] = await connection.execute(query);
+    let query = "";
+    let params = [];
+    if (status !== undefined) {
+      query = `SELECT COUNT(guestId) AS jumlah FROM tbl_guests WHERE status = ?`;
+      params = [status];
+    } else {
+      query = `SELECT COUNT(guestId) AS jumlah FROM tbl_guests`;
+    }
+    const [result] = await connection.execute(query, params);
     return result;
   } catch (error) {
     console.log(error);

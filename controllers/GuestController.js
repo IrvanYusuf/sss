@@ -24,9 +24,10 @@ const getAllGuests = async (req, res) => {
     const status = req.query.status;
     const offset = page * limit;
     const result = await Guest.getAllGuests(status, limit, offset);
+    const total = await Guest.getLengthGuests(status);
     res.status(200).json({
       message: "success",
-      total: result.length,
+      total: total[0].jumlah,
       limit: limit,
       page: page,
       data: result,
@@ -99,7 +100,8 @@ const changeStatus = async (req, res) => {
 
 const getLengthGuests = async (req, res) => {
   try {
-    const result = await Guest.getLengthGuests();
+    const status = req.query.status;
+    const result = await Guest.getLengthGuests(status);
     res.status(200).json({ status: "success", data: result });
   } catch (error) {
     console.log(error);
