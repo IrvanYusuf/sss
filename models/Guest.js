@@ -32,8 +32,10 @@ const getAllGuests = async (
       query = `SELECT * FROM tbl_guests WHERE status = ? LIMIT ? OFFSET ?`;
       queryParams = [status, limit, offset];
     } else if (search !== undefined) {
+      const slice = search.replaceAll("'", "");
+      const searchValue = `%${slice}%`;
       query = `SELECT * FROM tbl_guests WHERE name LIKE ? OR address LIKE ? LIMIT ? OFFSET ?`;
-      queryParams = [search, search, limit, offset];
+      queryParams = [searchValue, searchValue, limit, offset];
     } else {
       query = `SELECT * FROM tbl_guests LIMIT ? OFFSET ?`;
       queryParams = [limit, offset];
