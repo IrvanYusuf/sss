@@ -24,7 +24,7 @@ const getAllGuests = async (req, res) => {
     const search = req.query.search;
     const status = req.query.status;
     const offset = page * limit;
-    const result = await Guest.getAllGuests(status, limit, offset,search);
+    const result = await Guest.getAllGuests(status, limit, offset, search);
     const total = await Guest.getLengthGuests(status);
     res.status(200).json({
       message: "success",

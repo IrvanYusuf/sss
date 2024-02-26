@@ -28,14 +28,19 @@ const getAllGuests = async (
   try {
     let query = "";
     let queryParams = [];
-    if (status !== undefined) {
-      query = `SELECT * FROM tbl_guests WHERE status = ? LIMIT ? OFFSET ?`;
-      queryParams = [status, limit, offset];
+    if (search !== undefined && status !== undefined) {
+      const slice = search.replaceAll("'", "");
+      const searchValue = `%${slice}%`;
+      query = `SELECT * FROM tbl_guests WHERE name LIKE ? OR address LIKE ? AND status = ? LIMIT ? OFFSET ?`;
+      queryParams = [searchValue, searchValue, status, limit, offset];
     } else if (search !== undefined) {
       const slice = search.replaceAll("'", "");
       const searchValue = `%${slice}%`;
       query = `SELECT * FROM tbl_guests WHERE name LIKE ? OR address LIKE ? LIMIT ? OFFSET ?`;
       queryParams = [searchValue, searchValue, limit, offset];
+    } else if (status !== undefined) {
+      query = `SELECT * FROM tbl_guests WHERE status = ? LIMIT ? OFFSET ?`;
+      queryParams = [status, limit, offset];
     } else {
       query = `SELECT * FROM tbl_guests LIMIT ? OFFSET ?`;
       queryParams = [limit, offset];
