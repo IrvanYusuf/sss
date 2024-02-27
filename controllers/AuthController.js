@@ -32,6 +32,7 @@ const register = async (req, res) => {
 const login = async (req, res) => {
   try {
     const { username, password } = req.body;
+    console.log(req.body);
 
     // validasi username
     if (!username)
