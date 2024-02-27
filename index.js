@@ -7,7 +7,7 @@ env.config();
 
 app.use(
   cors({
-    origin: ["https://undangan-henna-one.vercel.app/"],
+    origin: ["https://undangan-henna-one.vercel.app"],
     credentials: true,
   })
 );
